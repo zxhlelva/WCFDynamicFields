@@ -1,0 +1,144 @@
+﻿using System;
+using System.Collections.Generic;
+using System.Runtime.Serialization;
+using System.Xml;
+using System.Xml.Serialization;
+using Newtonsoft.Json;
+
+namespace WCFDynamicFields.Contracts.DataContracts
+{
+    //[DataContract]
+    [Serializable]
+    [XmlRoot(Namespace = "WWW.REST", IsNullable = false)]
+    [JsonObject(MemberSerialization.OptIn)]
+    public class TankCollection<T> : IList<T>, IXmlSerializable
+    {
+        //[XmlAttribute("CollectionName")]
+        [XmlElement(IsNullable = true)]
+        [DataMember]
+        [JsonProperty("@CollectionName")]
+        public string CollectionName { get; set; }
+
+        private List<T> _items;
+
+        [JsonProperty]
+        [XmlArray("ItemArray")]
+        [XmlArrayItem("Item", NestingLevel = 1)]
+        public List<T> Items
+        {
+            get { return _items; }
+            set { _items = value; }
+        }
+
+        public TankCollection()
+        {
+            this._items = new List<T>();
+        }
+
+        public int IndexOf(T item)
+        {
+            return _items.IndexOf(item);
+        }
+
+        public void Insert(int index, T item)
+        {
+            _items.Insert(index, item);
+        }
+
+        public void RemoveAt(int index)
+        {
+            _items.RemoveAt(index);
+        }
+
+        public T this[int index]
+        {
+            get { return this._items[index]; }
+            set { this._items[index] = value; }
+        }
+
+        public void Add(T item)
+        {
+            this._items.Add(item);
+        }
+
+        public void Clear()
+        {
+            this._items.Clear();
+        }
+
+        public bool Contains(T item)
+        {
+            return _items.Contains(item);
+        }
+
+        public void CopyTo(T[] array, int arrayIndex)
+        {
+            _items.CopyTo(array, arrayIndex);
+        }
+
+        public int Count
+        {
+            get { return this._items.Count; }
+        }
+
+        public bool IsReadOnly
+        {
+            get { return false; }
+        }
+
+        public bool Remove(T item)
+        {
+            return this._items.Remove(item);
+        }
+
+        public IEnumerator<T> GetEnumerator()
+        {
+            return this._items.GetEnumerator();
+        }
+
+        System.Collections.IEnumerator System.Collections.IEnumerable.GetEnumerator()
+        {
+            return this._items.GetEnumerator();
+        }
+
+        #region IXmlSerializable Members
+
+        public System.Xml.Schema.XmlSchema GetSchema()
+        {
+            return null;
+        }
+
+        public void ReadXml(XmlReader reader)
+        {
+            XmlSerializer serializer = new XmlSerializer(typeof(T));
+            reader.Read();
+            while (reader.NodeType != XmlNodeType.EndElement)
+            {
+
+                // YES it uses the XmlSerializer to serialize each item!
+                // It is so simple.
+                T item = (T)serializer.Deserialize(reader);
+                if (item != null) // May be I have to throw here ?
+                    this.Add(item);
+            }
+            reader.ReadEndElement();
+        }
+
+        public void WriteXml(XmlWriter writer)
+        {
+            Type type = this.GetType();
+            object[] objArray = type.GetCustomAttributes(typeof(XmlRootAttribute), false);
+            XmlRootAttribute obj = objArray[0] as XmlRootAttribute;
+            writer.WriteElementString("CollectionName", "WWW.REST", this.CollectionName);
+            XmlRootAttribute xmlRootAttribute = new XmlRootAttribute(obj.ElementName);
+            xmlRootAttribute.Namespace = "WWW.REST";
+            XmlSerializer serializer = new XmlSerializer(typeof(T), xmlRootAttribute);
+            foreach (var item in this._items)
+            {
+                serializer.Serialize(writer, item);
+            }
+        }
+
+        #endregion
+    }
+}
