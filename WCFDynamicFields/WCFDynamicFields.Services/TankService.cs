@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using WCFDynamicFields.Contracts.ServiceContracts;
 using WCFDynamicFields.Contracts.DataContracts;
+using WCFDynamicFields.Contracts.DataContracts.DataPointPermissionControl;
 
 namespace WCFMessageFormatter.Services
 {    
@@ -114,6 +115,7 @@ namespace WCFMessageFormatter.Services
                                               };
             organizitions.TankCollection.CollectionName = "TestTankCollection";
             organizitions.TankCollection = null;
+            DataPointPermissionMapping.RemoveOrganizationFields(organizitions);
             return organizitions;
         }
 

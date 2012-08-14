@@ -52,56 +52,31 @@ namespace WCFDynamicFields.CustomServiceBehaviors
                 default:
                     {
                         return this.CreateXMLResponse(messageVersion, result, action);
-                        //return this.originalFormatter.SerializeReply(messageVersion, parameters, result);
                     }
             }
         }
 
-        private  Message CreateXMLResponse(MessageVersion messageVersion,object result, string action)
+        private Message CreateXMLResponse(MessageVersion messageVersion, object result, string action)
         {
-            using (MemoryStream stream = new MemoryStream())
-            {
-                XmlSerializer serializer = new XmlSerializer(result.GetType());
-                serializer.Serialize(stream, result);
-                stream.Position = 0;
-                using (XmlReader xmlReader = new XmlTextReader(stream))
-                {
-                    Message message = Message.CreateMessage(messageVersion, action, xmlReader);
-                    WebOperationContext.Current.OutgoingResponse.Format = WebMessageFormat.Xml;
-                    WebOperationContext.Current.OutgoingResponse.ContentType = CONTENT_TYPE_XML;
-                    return message;
-                }
-            }
+            XmlSerializer serializer = new XmlSerializer(result.GetType());
+            WebOperationContext.Current.OutgoingResponse.Format = WebMessageFormat.Xml;
+            WebOperationContext.Current.OutgoingResponse.ContentType = CONTENT_TYPE_XML;
+            Message message = WebOperationContext.Current.CreateXmlResponse(result, serializer);
+            return message;
         }
 
         private Message CreateJsonResponse(object result)
         {
-            using (MemoryStream stream = new MemoryStream())
+            WebOperationContext.Current.OutgoingResponse.Format = WebMessageFormat.Json;
+            WebOperationContext.Current.OutgoingResponse.ContentType = CONTENT_TYPE_JSON;
+            DataPointPermissionResolver resolver = new DataPointPermissionResolver();
+            JsonSerializerSettings settings = new JsonSerializerSettings()
             {
-                WebOperationContext.Current.OutgoingResponse.Format = WebMessageFormat.Json;
-                WebOperationContext.Current.OutgoingResponse.ContentType = CONTENT_TYPE_JSON;
-                DataPointPermissionResolver resolver = new DataPointPermissionResolver();
-                JsonSerializerSettings settings = new JsonSerializerSettings()
-                {
-                    ContractResolver = resolver,
-                    Context = new StreamingContext(new StreamingContextStates(), resolver)
-                };
-                string jsonString = JsonConvert.SerializeObject(result, settings);
-                return WebOperationContext.Current.CreateTextResponse(jsonString);
-                //JsonSerializer serializer = new JsonSerializer();
-                //DataPointPermissionResolver resolver = new DataPointPermissionResolver();
-                //serializer.ContractResolver = resolver;
-                //serializer.Context = new StreamingContext(new StreamingContextStates(), resolver);
-                //using (StreamWriter streamWriter = new StreamWriter(stream))
-                //{
-                //    using (JsonWriter writer = new JsonTextWriter(streamWriter))
-                //    {
-                //        serializer.Serialize(writer, result);
-                //        stream.Position = 0;
-                //        return WebOperationContext.Current.CreateStreamResponse(stream, CONTENT_TYPE_JSON);
-                //    }
-                //}
-            }
+                ContractResolver = resolver,
+                Context = new StreamingContext(new StreamingContextStates(), resolver)
+            };
+            string jsonString = JsonConvert.SerializeObject(result, settings);
+            return WebOperationContext.Current.CreateTextResponse(jsonString);
         }
 
         private Message CreateBinaryResponse(object result)

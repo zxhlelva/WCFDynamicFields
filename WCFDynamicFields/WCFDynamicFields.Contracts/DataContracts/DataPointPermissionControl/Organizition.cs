@@ -12,28 +12,38 @@ namespace WCFDynamicFields.Contracts.DataContracts
 {
     public partial class Organizition
     {
-        //[XmlIgnore]
-        //[JsonIgnore]
-        //public bool ReponseLinkSpecified { get; set; }
+        [XmlIgnore]
+        [JsonIgnore]
+        public bool ReponseLinkSpecified { get; set; }
 
-        //[XmlIgnore]
-        //[JsonIgnore]
-        //public bool OrganizitionsSpecified { get; set; }
+        [XmlIgnore]
+        [JsonIgnore]
+        public bool OrganizitionsSpecified { get; set; }
 
-        //[XmlIgnore]
-        //[JsonIgnore]
-        //public bool NavigationGenericCollectionSpecified { get; set; }
+        [XmlIgnore]
+        [JsonIgnore]
+        public bool NavigationGenericCollectionSpecified { get; set; }
 
-        //[XmlIgnore]
-        //[JsonIgnore]
-        //public bool TankCollectionSpecified { get; set; }
+        [XmlIgnore]
+        [JsonIgnore]
+        public bool TankCollectionSpecified { get; set; }
 
-        //[XmlIgnore]
-        //[JsonIgnore]
-        //public bool TankBytesSpecified { get; set; }
+        [XmlIgnore]
+        [JsonIgnore]
+        public bool TankBytesSpecified { get; set; }
 
-        //[XmlIgnore]
-        //[JsonIgnore]
-        //public bool OrganizationTankSpecified { get; set; }
+        [XmlIgnore]
+        [JsonIgnore]
+        public bool OrganizationTankSpecified { get; set; }
+
+        [OnSerializing]
+        public void OnSerializingMethod(StreamingContext context)
+        {
+            DataPointPermissionResolver contractResolver = context.Context as DataPointPermissionResolver;
+            if (contractResolver != null)
+            {
+                contractResolver.RemoveProperty("Organizitions");
+            }
+        }
     }
 }

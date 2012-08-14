@@ -44,16 +44,5 @@ namespace WCFDynamicFields.Contracts.DataContracts
         [XmlElement]
         [JsonProperty]
         public Tank OrganizationTank { get; set; }
-
-        [OnSerializing]
-        public void OnSerializingMethod(StreamingContext context)
-        {
-            DataPointPermissionResolver contractResolver = context.Context as DataPointPermissionResolver;
-            //DataPointPermissionMapping.RemoveOrganizationFields(this);
-            if (contractResolver != null)
-            {
-                contractResolver.RemoveProperty("Organizitions");
-            }
-        }
     }
 }
